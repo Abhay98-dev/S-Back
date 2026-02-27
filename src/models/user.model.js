@@ -63,22 +63,24 @@ const userSchema = new mongoose.Schema(
 
 
 /**
- * 🔐 Hash password before saving
+ * 🔐 Hash password before saving (Modern Mongoose way)
  */
 userSchema.pre("save", async function () {
-  // Only hash if password modified
-  if (!this.isModified("password")) {
-    return next();
-  }
+  // Only hash if password was modified
+  if (!this.isModified("password")) return;
 
-  try {
-    const salt = await bcrypt.genSalt(10);
-    this.password = await bcrypt.hash(this.password, salt);
-    next();
-  } catch (error) {
-    console.log(error);
-  }
+  const salt = await bcrypt.genSalt(10);
+  this.password = await bcrypt.hash(this.password, salt);
 });
+
+
+
+/**
+ * 🔐 Optional: Compare password method (Clean & Professional)
+ */
+userSchema.methods.comparePassword = async function (enteredPassword) {
+  return await bcrypt.compare(enteredPassword, this.password);
+};
 
 
 
