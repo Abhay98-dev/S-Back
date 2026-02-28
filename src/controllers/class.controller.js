@@ -114,7 +114,7 @@ export const assignClassTeacher = async (req, res) => {
 export const getMyClasses = async (req, res) => {
   try {
     const teacherId = req.user.userId; // IMPORTANT
-
+    console.log("Logged in teacherId:", teacherId);
     const classes = await Class.find({
       classTeacher: teacherId,
     }).populate("classTeacher", "name email");
