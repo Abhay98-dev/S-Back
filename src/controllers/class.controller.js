@@ -105,3 +105,31 @@ export const assignClassTeacher = async (req, res) => {
     });
   }
 };
+
+/**
+ * @desc   Get classes assigned to logged-in teacher
+ * @route  GET /api/classes/my
+ * @access Private (Teacher)
+ */
+export const getMyClasses = async (req, res) => {
+  try {
+    const teacherId = req.user.userId; // IMPORTANT
+
+    const classes = await Class.find({
+      classTeacher: teacherId,
+    }).populate("classTeacher", "name email");
+
+    res.status(200).json({
+      success: true,
+      count: classes.length,
+      data: classes,
+    });
+
+  } catch (error) {
+    console.error("Get My Classes Error:", error);
+    res.status(500).json({
+      success: false,
+      message: "Server error",
+    });
+  }
+};
