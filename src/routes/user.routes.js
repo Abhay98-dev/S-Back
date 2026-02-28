@@ -1,5 +1,5 @@
 import express from "express";
-import { createTeacher , createStudent } from "../controllers/user.controller.js";
+import { createTeacher , createStudent , getAllTeachers , getAllStudents , deleteUser } from "../controllers/user.controller.js";
 import protect from "../middlewares/auth.middleware.js";
 import authorizeRoles from "../middlewares/role.middleware.js";
 
