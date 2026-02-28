@@ -113,12 +113,17 @@ export const assignClassTeacher = async (req, res) => {
  */
 export const getMyClasses = async (req, res) => {
   try {
-    const teacherId = req.user.userId; // IMPORTANT
-    console.log("Logged in teacherId:", teacherId);
+    const teacherId = req.user.userId;
+
     const classes = await Class.find({
-      classTeacher: teacherId,
-    }).populate("classTeacher", "name email");
-    console.log("Classes found for teacher:", classes);
+      $or: [
+        { classTeacher: teacherId },
+        { "subjectTeachers.teacher": teacherId },
+      ],
+    })
+      .populate("classTeacher", "name email")
+      .populate("subjectTeachers.teacher", "name email");
+
     res.status(200).json({
       success: true,
       count: classes.length,
@@ -127,6 +132,61 @@ export const getMyClasses = async (req, res) => {
 
   } catch (error) {
     console.error("Get My Classes Error:", error);
+    res.status(500).json({
+      success: false,
+      message: "Server error",
+    });
+  }
+};
+
+/**
+ * @desc   Assign subject teacher to class
+ * @route  PATCH /api/classes/:classId/assign-subject
+ * @access Private (Admin)
+ */
+export const assignSubjectTeacher = async (req, res) => {
+  try {
+    const { classId } = req.params;
+    const { subject, teacherId } = req.body;
+
+    if (!subject || !teacherId) {
+      return res.status(400).json({
+        success: false,
+        message: "subject and teacherId required",
+      });
+    }
+
+    const classData = await Class.findById(classId);
+    if (!classData) {
+      return res.status(404).json({
+        success: false,
+        message: "Class not found",
+      });
+    }
+
+    const teacher = await User.findById(teacherId);
+    if (!teacher || teacher.role !== "teacher") {
+      return res.status(400).json({
+        success: false,
+        message: "Invalid teacher",
+      });
+    }
+
+    classData.subjectTeachers.push({
+      subject,
+      teacher: teacherId,
+    });
+
+    await classData.save();
+
+    res.status(200).json({
+      success: true,
+      message: "Subject teacher assigned",
+      data: classData,
+    });
+
+  } catch (error) {
+    console.error("Assign Subject Teacher Error:", error);
     res.status(500).json({
       success: false,
       message: "Server error",

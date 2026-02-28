@@ -118,3 +118,61 @@ export const createStudent = async (req, res) => {
     });
   }
 };
+
+export const getAllTeachers = async (req, res) => {
+  try {
+    const teachers = await User.find({ role: "teacher" })
+      .select("-password")
+      .sort({ createdAt: -1 });
+
+    res.status(200).json({
+      success: true,
+      count: teachers.length,
+      data: teachers,
+    });
+
+  } catch (error) {
+    res.status(500).json({ success: false, message: "Server error" });
+  }
+};
+
+export const getAllStudents = async (req, res) => {
+  try {
+    const students = await User.find({ role: "student" })
+      .select("-password")
+      .populate("classId", "name section")
+      .sort({ createdAt: -1 });
+
+    res.status(200).json({
+      success: true,
+      count: students.length,
+      data: students,
+    });
+
+  } catch (error) {
+    res.status(500).json({ success: false, message: "Server error" });
+  }
+};
+
+export const deleteUser = async (req, res) => {
+  try {
+    const user = await User.findById(req.params.id);
+
+    if (!user) {
+      return res.status(404).json({
+        success: false,
+        message: "User not found",
+      });
+    }
+
+    await user.deleteOne();
+
+    res.status(200).json({
+      success: true,
+      message: "User deleted successfully",
+    });
+
+  } catch (error) {
+    res.status(500).json({ success: false, message: "Server error" });
+  }
+};

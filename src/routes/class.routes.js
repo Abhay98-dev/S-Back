@@ -1,5 +1,5 @@
 import express from "express";
-import { createClass, assignClassTeacher , getMyClasses } from "../controllers/class.controller.js";
+import { createClass, assignClassTeacher , getMyClasses , assignSubjectTeacher } from "../controllers/class.controller.js";
 import protect from "../middlewares/auth.middleware.js";
 import authorizeRoles from "../middlewares/role.middleware.js";
 
@@ -22,6 +22,14 @@ router.patch(
   protect,
   authorizeRoles("admin"),
   assignClassTeacher
+);
+
+// Assign subject teacher
+router.patch(
+  "/:classId/assign-subject",
+  protect,
+  authorizeRoles("admin"),
+  assignSubjectTeacher
 );
 
 export default router;

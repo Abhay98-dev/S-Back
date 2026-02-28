@@ -5,6 +5,18 @@ import authorizeRoles from "../middlewares/role.middleware.js";
 
 const router = express.Router();
 
+router.get("/teachers", 
+  protect, 
+  authorizeRoles("admin"), 
+  getAllTeachers
+);
+
+router.get("/students", 
+  protect, 
+  authorizeRoles("admin"), 
+  getAllStudents
+);
+
 // Admin creates teacher
 router.post(
   "/create-teacher",
@@ -18,6 +30,13 @@ router.post(
   protect,
   authorizeRoles("admin"),
   createStudent
+);
+
+router.delete(
+  "/:id", 
+  protect, 
+  authorizeRoles("admin"), 
+  deleteUser
 );
 
 export default router;
