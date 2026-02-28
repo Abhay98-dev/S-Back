@@ -118,7 +118,7 @@ export const getMyClasses = async (req, res) => {
     const classes = await Class.find({
       classTeacher: teacherId,
     }).populate("classTeacher", "name email");
-
+    console.log("Classes found for teacher:", classes);
     res.status(200).json({
       success: true,
       count: classes.length,
