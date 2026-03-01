@@ -143,6 +143,7 @@ export const getAllStudents = async (req, res) => {
       .populate("classId", "name section")
       .sort({ createdAt: -1 });
 
+    console.log("Fetched Students:", students);  
     res.status(200).json({
       success: true,
       count: students.length,
