@@ -1,5 +1,14 @@
 import express from "express";
-import { createClass, assignClassTeacher , getMyClasses , assignSubjectTeacher } from "../controllers/class.controller.js";
+import { createClass, 
+  assignClassTeacher , 
+  getMyClasses , 
+  assignSubjectTeacher ,
+  getAllClasses ,
+  getSingleClass ,
+  updateClass ,
+  deleteClass ,
+  removeTeacher
+} from "../controllers/class.controller.js";
 import protect from "../middlewares/auth.middleware.js";
 import authorizeRoles from "../middlewares/role.middleware.js";
 
@@ -13,8 +22,16 @@ router.get(
   getMyClasses
 );
 
+router.get("/", protect, authorizeRoles("admin"), getAllClasses);
+
+router.get("/:id", protect, authorizeRoles("admin"), getSingleClass);
+
 // Create class
 router.post("/", protect, authorizeRoles("admin"), createClass);
+
+router.put("/:id", protect, authorizeRoles("admin"), updateClass);
+
+router.delete("/:id", protect, authorizeRoles("admin"), deleteClass);
 
 // Assign class teacher
 router.patch(
@@ -30,6 +47,13 @@ router.patch(
   protect,
   authorizeRoles("admin"),
   assignSubjectTeacher
+);
+
+router.patch(
+  "/:classId/remove-teacher",
+  protect,
+  authorizeRoles("admin"),
+  removeTeacher
 );
 
 export default router;

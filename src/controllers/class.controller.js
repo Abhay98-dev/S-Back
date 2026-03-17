@@ -23,11 +23,7 @@ export const createClass = async (req, res) => {
       standard,
     });
 
-    return res.status(201).json({
-      success: true,
-      message: "Class created successfully",
-      data: newClass,
-    });
+    return res.status(201).json(newClass);
 
   } catch (error) {
     console.error("Create Class Error:", error);
@@ -91,11 +87,7 @@ export const assignClassTeacher = async (req, res) => {
     const updatedClass = await Class.findById(classId)
       .populate("classTeacher", "name email");
 
-    return res.status(200).json({
-      success: true,
-      message: "Class teacher assigned successfully",
-      data: updatedClass,
-    });
+    return res.json(updatedClass);
 
   } catch (error) {
     console.error("Assign Class Teacher Error:", error);
@@ -192,4 +184,37 @@ export const assignSubjectTeacher = async (req, res) => {
       message: "Server error",
     });
   }
+};
+
+export const getAllClasses = async (req, res) => {
+  const classes = await Class.find().populate("classTeacher", "name");
+  res.json(classes);
+};
+
+export const getSingleClass = async (req, res) => {
+  const cls = await Class.findById(req.params.id).populate("classTeacher");
+  res.json(cls);
+};
+
+export const updateClass = async (req, res) => {
+  const cls = await Class.findByIdAndUpdate(
+    req.params.id,
+    req.body,
+    { new: true }
+  );
+  res.json(cls);
+};
+
+export const deleteClass = async (req, res) => {
+  await Class.findByIdAndDelete(req.params.id);
+  res.json({ message: "Class deleted" });
+};
+
+export const removeTeacher = async (req, res) => {
+  const cls = await Class.findByIdAndUpdate(
+    req.params.classId,
+    { classTeacher: null },
+    { new: true }
+  );
+  res.json(cls);
 };

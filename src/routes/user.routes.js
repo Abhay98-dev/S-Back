@@ -1,5 +1,15 @@
 import express from "express";
-import { createTeacher , createStudent , getAllTeachers , getAllStudents , deleteUser } from "../controllers/user.controller.js";
+import { 
+  createTeacher ,
+  createStudent , 
+  getAllTeachers , 
+  getAllStudents , 
+  deleteUser , 
+  getStudentById , 
+  getTeacherById , 
+  updateStudent , 
+  updateTeacher
+  } from "../controllers/user.controller.js";
 import protect from "../middlewares/auth.middleware.js";
 import authorizeRoles from "../middlewares/role.middleware.js";
 
@@ -17,6 +27,11 @@ router.get("/students",
   getAllStudents
 );
 
+
+router.get("/students/:id", protect, authorizeRoles("admin"), getStudentById);
+
+router.get("/teachers/:id", protect, authorizeRoles("admin"), getTeacherById);
+
 // Admin creates teacher
 router.post(
   "/create-teacher",
@@ -33,10 +48,22 @@ router.post(
 );
 
 router.delete(
-  "/:id", 
+  "/teachers/:id", 
   protect, 
   authorizeRoles("admin"), 
   deleteUser
 );
+
+router.delete(
+  "/students/:id", 
+  protect, 
+  authorizeRoles("admin"), 
+  deleteUser
+);
+
+
+router.put("/teachers/:id", protect, authorizeRoles("admin"), updateTeacher);
+
+router.put("/students/:id", protect, authorizeRoles("admin"), updateStudent);
 
 export default router;

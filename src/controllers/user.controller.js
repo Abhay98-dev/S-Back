@@ -38,17 +38,7 @@ export const createTeacher = async (req, res) => {
       mustChangePassword: true,
     });
 
-    return res.status(201).json({
-      success: true,
-      message: "Teacher created successfully",
-      data: {
-        id: teacher._id,
-        name: teacher.name,
-        email: teacher.email,
-        role: teacher.role,
-        subjects: teacher.subjects,
-      },
-    });
+    return res.status(201).json(teacher);
   } catch (error) {
     console.error("Create Teacher Error:", error);
     return res.status(500).json({
@@ -97,18 +87,7 @@ export const createStudent = async (req, res) => {
       mustChangePassword: true,
     });
 
-    return res.status(201).json({
-      success: true,
-      message: "Student created successfully",
-      data: {
-        id: student._id,
-        name: student.name,
-        email: student.email,
-        role: student.role,
-        classId: student.classId,
-        uid: student.uid,
-      },
-    });
+    return res.status(201).json(student);
 
   } catch (error) {
     console.error("Create Student Error:", error);
@@ -125,11 +104,7 @@ export const getAllTeachers = async (req, res) => {
       .select("-password")
       .sort({ createdAt: -1 });
 
-    res.status(200).json({
-      success: true,
-      count: teachers.length,
-      data: teachers,
-    });
+    res.json(teachers)
 
   } catch (error) {
     res.status(500).json({ success: false, message: "Server error" });
@@ -144,11 +119,7 @@ export const getAllStudents = async (req, res) => {
       .sort({ createdAt: -1 });
 
     console.log("Fetched Students:", students);  
-    res.status(200).json({
-      success: true,
-      count: students.length,
-      data: students,
-    });
+    res.json(students);
 
   } catch (error) {
     res.status(500).json({ success: false, message: "Server error" });
@@ -168,12 +139,41 @@ export const deleteUser = async (req, res) => {
 
     await user.deleteOne();
 
-    res.status(200).json({
-      success: true,
-      message: "User deleted successfully",
+    res.json({
+      message: "Deleted"
     });
 
   } catch (error) {
     res.status(500).json({ success: false, message: "Server error" });
   }
+};
+
+export const getTeacherById = async (req, res) => {
+  const teacher = await User.findById(req.params.id).select("-password");
+  res.json(teacher);
+};
+
+export const updateTeacher = async (req, res) => {
+  const teacher = await User.findByIdAndUpdate(
+    req.params.id,
+    req.body,
+    { new: true }
+  );
+  res.json(teacher);
+};
+
+export const getStudentById = async (req, res) => {
+  const student = await User.findById(req.params.id)
+    .select("-password")
+    .populate("classId");
+  res.json(student);
+};
+
+export const updateStudent = async (req, res) => {
+  const student = await User.findByIdAndUpdate(
+    req.params.id,
+    req.body,
+    { new: true }
+  );
+  res.json(student);
 };
