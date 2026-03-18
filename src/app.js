@@ -9,6 +9,9 @@ import timetableRoute from "./routes/timetable.route.js";
 import attendanceRoute from  "./routes/attendance.route.js";
 import homeworkRoute from "./routes/homework.route.js";
 import adminRoute from "./routes/admin.route.js";
+import studentRoute from "./routes/student.route.js";
+import teacherRoute from "./routes/teacher.route.js";
+import announcementRoute from "./routes/announcement.route.js";
 
 dotenv.config();
 
@@ -34,5 +37,8 @@ app.use("/api/timetable", timetableRoute);
 app.use("/api/attendance", attendanceRoute);
 app.use("/api/homework", homeworkRoute);
 app.use("/api/admin", adminRoute);
+app.use("/api/student", studentRoute);
+app.use("/api/teacher", teacherRoute);
+app.use("/api/announcements", announcementRoute);
 
 export default app;

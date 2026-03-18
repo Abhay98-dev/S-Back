@@ -1,13 +1,15 @@
 import express from "express";
 import { createClass, 
   assignClassTeacher , 
-  getMyClasses , 
+  getTeacherClasses , 
   assignSubjectTeacher ,
   getAllClasses ,
   getSingleClass ,
   updateClass ,
   deleteClass ,
-  removeTeacher
+  removeTeacher,
+  getStudentClass,
+  getClassStudents
 } from "../controllers/class.controller.js";
 import protect from "../middlewares/auth.middleware.js";
 import authorizeRoles from "../middlewares/role.middleware.js";
@@ -19,10 +21,14 @@ router.get(
   "/my",
   protect,
   authorizeRoles("teacher"),
-  getMyClasses
+  getTeacherClasses
 );
 
+router.get("/:id/students", protect, authorizeRoles("teacher", "admin"), getClassStudents);
+
 router.get("/", protect, authorizeRoles("admin"), getAllClasses);
+
+router.get("/student/my-class", protect,authorizeRoles("student"), getStudentClass);
 
 router.get("/:id", protect, authorizeRoles("admin"), getSingleClass);
 

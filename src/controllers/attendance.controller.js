@@ -10,12 +10,12 @@ import User from "../models/user.model.js";
 export const markAttendance = async (req, res) => {
   try {
     const teacherId = req.user.userId;
-    const { classId, date } = req.body;
+    const { classId, date, records } = req.body;
 
-    if (!classId || !date) {
+    if (!classId || !date || !records || !records.length) {
       return res.status(400).json({
         success: false,
-        message: "classId and date required",
+        message: "classId, date and records are required",
       });
     }
 
@@ -29,45 +29,34 @@ export const markAttendance = async (req, res) => {
       });
     }
 
-    // 2️⃣ Check if teacher is class teacher
-    if (!classData.classTeacher || classData.classTeacher.toString() !== teacherId) {
+    // 2️⃣ Check teacher authorization
+    if (
+      !classData.classTeacher ||
+      classData.classTeacher.toString() !== teacherId
+    ) {
       return res.status(403).json({
         success: false,
-        message: "You are not the class teacher of this class",
+        message: "You are not the class teacher",
       });
     }
 
-    // 3️⃣ Get all students of this class automatically
-    const students = await User.find({
-      classId,
-      role: "student",
-      isActive: true,
-    });
-
-    if (!students.length) {
-      return res.status(400).json({
-        success: false,
-        message: "No students found in this class",
-      });
-    }
-
-    // 4️⃣ Create default attendance (all present)
-    const records = students.map((student) => ({
-      student: student._id,
-      status: "present",
+    // 3️⃣ Format records
+    const formattedRecords = records.map((r) => ({
+      student: r.studentId,
+      status: r.status.toLowerCase(), // "present"/"absent"
     }));
 
+    // 4️⃣ Create attendance
     const attendance = await Attendance.create({
       classId,
       date,
       teacher: teacherId,
-      records,
+      records: formattedRecords,
     });
 
     res.status(201).json({
       success: true,
-      message: "Attendance marked successfully (all present by default)",
-      data: attendance,
+      message: "Attendance marked successfully",
     });
 
   } catch (error) {
@@ -193,6 +182,60 @@ export const markAbsentStudents = async (req, res) => {
 
   } catch (error) {
     console.error("Mark Absent Error:", error);
+    res.status(500).json({
+      success: false,
+      message: "Server error",
+    });
+  }
+};
+
+export const getClassAttendance = async (req, res) => {
+  try {
+    const teacherId = req.user.userId;
+    const { classId } = req.params;
+    const { date } = req.query;
+
+    // 1️⃣ Check class exists
+    const classData = await Class.findById(classId);
+
+    if (!classData) {
+      return res.status(404).json({
+        success: false,
+        message: "Class not found",
+      });
+    }
+
+    // 2️⃣ Check teacher authorization
+    if (
+      !classData.classTeacher ||
+      classData.classTeacher.toString() !== teacherId
+    ) {
+      return res.status(403).json({
+        success: false,
+        message: "Not authorized for this class",
+      });
+    }
+
+    // 3️⃣ Build query
+    let query = { classId };
+
+    if (date) {
+      query.date = date; // exact match
+    }
+
+    // 4️⃣ Fetch attendance
+    const attendance = await Attendance.find(query)
+      .populate("records.student", "name uid")
+      .sort({ date: -1 });
+
+    res.status(200).json({
+      success: true,
+      count: attendance.length,
+      data: attendance,
+    });
+
+  } catch (error) {
+    console.error("Get Class Attendance Error:", error);
     res.status(500).json({
       success: false,
       message: "Server error",

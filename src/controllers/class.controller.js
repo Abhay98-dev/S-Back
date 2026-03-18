@@ -103,7 +103,7 @@ export const assignClassTeacher = async (req, res) => {
  * @route  GET /api/classes/my
  * @access Private (Teacher)
  */
-export const getMyClasses = async (req, res) => {
+export const getTeacherClasses = async (req, res) => {
   try {
     const teacherId = req.user.userId;
 
@@ -217,4 +217,58 @@ export const removeTeacher = async (req, res) => {
     { new: true }
   );
   res.json(cls);
+};
+
+export const getStudentClass = async (req, res) => {
+  try {
+    const studentId = req.user.userId;
+
+    const student = await User.findById(studentId)
+      .populate({
+        path: "classId",
+        populate: {
+          path: "classTeacher",
+          select: "name email",
+        },
+      });
+
+    if (!student || !student.classId) {
+      return res.status(404).json({
+        success: false,
+        message: "Class not assigned",
+      });
+    }
+
+    res.status(200).json({
+      success: true,
+      data: student.classId,
+    });
+
+  } catch (error) {
+    console.error("Get My Class Error:", error);
+    res.status(500).json({
+      success: false,
+      message: "Server error",
+    });
+  }
+};
+
+export const getClassStudents = async (req, res) => {
+  try {
+    const { classId } = req.params;
+
+    const students = await User.find({
+      classId,
+      role: "student",
+    }).select("_id name uid");
+
+    res.status(200).json(students);
+
+  } catch (error) {
+    console.error("Get Class Students Error:", error);
+    res.status(500).json({
+      success: false,
+      message: "Server error",
+    });
+  }
 };

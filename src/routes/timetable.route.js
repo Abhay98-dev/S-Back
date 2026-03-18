@@ -5,8 +5,8 @@ import authorizeRoles from "../middlewares/role.middleware.js";
 
 const router = express.Router();
 
-router.post("/", protect, authorizeRoles("admin"), createOrUpdateTimetable);
+router.post("/admin", protect, authorizeRoles("admin"), createOrUpdateTimetable);
 
-router.get("/my", protect, authorizeRoles("student"), getMyTimetable);
+router.get("/student", protect, authorizeRoles("student"), getMyTimetable);
 
 export default router;

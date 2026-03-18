@@ -80,3 +80,49 @@ export const getMyHomework = async (req, res) => {
     });
   }
 };
+
+export const getHomeworkByClass = async (req, res) => {
+  try {
+    const teacherId = req.user.userId;
+    const { classId } = req.params;
+
+    // 1️⃣ Check class exists
+    const classData = await Class.findById(classId);
+
+    if (!classData) {
+      return res.status(404).json({
+        success: false,
+        message: "Class not found",
+      });
+    }
+
+    // 2️⃣ Authorization (only class teacher)
+    if (
+      !classData.classTeacher ||
+      classData.classTeacher.toString() !== teacherId
+    ) {
+      return res.status(403).json({
+        success: false,
+        message: "Not authorized for this class",
+      });
+    }
+
+    // 3️⃣ Get homework
+    const homeworkList = await Homework.find({ classId })
+      .populate("teacher", "name")
+      .sort({ createdAt: -1 });
+
+    res.status(200).json({
+      success: true,
+      count: homeworkList.length,
+      data: homeworkList,
+    });
+
+  } catch (error) {
+    console.error("Get Homework By Class Error:", error);
+    res.status(500).json({
+      success: false,
+      message: "Server error",
+    });
+  }
+};
