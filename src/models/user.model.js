@@ -54,6 +54,21 @@ const userSchema = new mongoose.Schema(
       type: Boolean,
       default: true,
     },
+
+    phone: {
+      type: String,
+      unique: true,
+      sparse: true,
+      match: [/^[0-9]{10}$/, "Please use a valid 10-digit phone number"]
+    },
+
+    isPhoneVerified: {
+      type: Boolean,
+      default: false
+    },
+
+    otp: String,
+    otpExpiry: Date,
   },
   {
     timestamps: true,

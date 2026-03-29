@@ -1,19 +1,15 @@
 import User from "../models/user.model.js";
 
-/**
- * @desc   Admin creates teacher
- * @route  POST /api/users/create-teacher
- * @access Private (Admin)
- */
+
 export const createTeacher = async (req, res) => {
   try {
-    const { name, email, password, subjects, uid } = req.body;
+    const { name, email, password, subjects, uid, phone } = req.body;
 
     // 1️⃣ Validate required fields
-    if (!name || !email || !password) {
+    if (!name || !email || !password || !phone) {
       return res.status(400).json({
         success: false,
-        message: "Name, email and password are required",
+        message: "Name, email, phone Number and password are required",
       });
     }
 
@@ -26,12 +22,29 @@ export const createTeacher = async (req, res) => {
         message: "User with this email already exists",
       });
     }
+    
+    const normalizedPhone = phone.replace(/\D/g, "");
+    //check is phone number already exists
+    const existingPhone = await User.findOne({ phone: normalizedPhone });
 
+    if(existingPhone){
+      return res.status(400).json({
+        success:false,
+        message:"User with this phone number already exists"
+      })
+    }
+
+/**
+ * @desc   Admin creates teacher
+ * @route  POST /api/users/create-teacher
+ * @access Private (Admin)
+ */
     // 3️⃣ Create teacher
     const teacher = await User.create({
       name,
       email: email.toLowerCase(),
       password, // Will be hashed automatically
+      phone: normalizedPhone,
       role: "teacher",
       subjects: subjects || [],
       uid,
@@ -55,13 +68,13 @@ export const createTeacher = async (req, res) => {
  */
 export const createStudent = async (req, res) => {
   try {
-    const { name, email, password, classId, uid } = req.body;
+    const { name, email, password, classId, uid,phone } = req.body;
 
     // 1️⃣ Validate required fields
-    if (!name || !email || !password || !classId || !uid) {
+    if (!name || !email || !password || !classId || !uid || !phone) {
       return res.status(400).json({
         success: false,
-        message: "Name, email, password, classId and uid are required",
+        message: "Name, email, password,Phone number, classId and uid are required",
       });
     }
 
@@ -75,6 +88,17 @@ export const createStudent = async (req, res) => {
       });
     }
 
+    const normalizedPhone = phone.replace(/\D/g, "");
+
+    const existingPhone = await User.findOne({ phone: normalizedPhone });
+
+    if(existingPhone){
+      return res.status(400).json({
+        success:false,
+        message:"User with this phone number already exists"
+      })
+    }
+
     // 3️⃣ Create student
     const student = await User.create({
       name,
@@ -85,6 +109,7 @@ export const createStudent = async (req, res) => {
       uid,
       subjects: [], // students don't have subjects
       mustChangePassword: true,
+      phone: normalizedPhone,
     });
 
     return res.status(201).json(student);
