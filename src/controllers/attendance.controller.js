@@ -84,7 +84,16 @@ export const markAttendance = async (req, res) => {
 export const getMyAttendance = async (req, res) => {
   try {
     const studentId = req.user.userId;
-    const classId = req.user.classId;
+    const student = await User.findById(studentId).select("classId");
+
+    if (!student || !student.classId) {
+      return res.status(404).json({
+        success: false,
+        message: "Class not assigned",
+      });
+    }
+
+    const classId = student.classId;
 
     const attendanceRecords = await Attendance.find({
       classId,

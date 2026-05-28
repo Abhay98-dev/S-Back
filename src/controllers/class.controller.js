@@ -171,10 +171,14 @@ export const assignSubjectTeacher = async (req, res) => {
 
     await classData.save();
 
+    const updatedClass = await Class.findById(classId)
+      .populate("classTeacher", "name email")
+      .populate("subjectTeachers.teacher", "name email");
+
     res.status(200).json({
       success: true,
       message: "Subject teacher assigned",
-      data: classData,
+      data: updatedClass,
     });
 
   } catch (error) {
@@ -187,12 +191,16 @@ export const assignSubjectTeacher = async (req, res) => {
 };
 
 export const getAllClasses = async (req, res) => {
-  const classes = await Class.find().populate("classTeacher", "name");
+  const classes = await Class.find()
+    .populate("classTeacher", "name email")
+    .populate("subjectTeachers.teacher", "name email");
   res.json(classes);
 };
 
 export const getSingleClass = async (req, res) => {
-  const cls = await Class.findById(req.params.id).populate("classTeacher");
+  const cls = await Class.findById(req.params.id)
+    .populate("classTeacher", "name email")
+    .populate("subjectTeachers.teacher", "name email");
   res.json(cls);
 };
 
@@ -226,10 +234,16 @@ export const getStudentClass = async (req, res) => {
     const student = await User.findById(studentId)
       .populate({
         path: "classId",
-        populate: {
-          path: "classTeacher",
-          select: "name email",
-        },
+        populate: [
+          {
+            path: "classTeacher",
+            select: "name email",
+          },
+          {
+            path: "subjectTeachers.teacher",
+            select: "name email",
+          },
+        ],
       });
 
     if (!student || !student.classId) {
@@ -239,9 +253,20 @@ export const getStudentClass = async (req, res) => {
       });
     }
 
+    const classmates = await User.find({
+      classId: student.classId._id,
+      role: "student",
+    }).select("_id name email uid");
+
+    const classData = student.classId.toObject();
+
     res.status(200).json({
       success: true,
-      data: student.classId,
+      data: {
+        ...classData,
+        students: classmates,
+        studentsCount: classmates.length,
+      },
     });
 
   } catch (error) {
