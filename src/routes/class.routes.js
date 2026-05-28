@@ -24,7 +24,7 @@ router.get(
   getTeacherClasses
 );
 
-router.get("/:id/students", protect, authorizeRoles("teacher", "admin"), getClassStudents);
+router.get("/:classId/students", protect, authorizeRoles("teacher", "admin"), getClassStudents);
 
 router.get("/", protect, authorizeRoles("admin"), getAllClasses);
 
